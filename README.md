@@ -1,7 +1,7 @@
 # ✈️ Airplane Classifier Flask App
 
 A simple and effective web application for classifying airplane images into one of four categories: **F16**, **Mi24**, **B1**, or **C130**. 
-The classification is powered by a pre-trained CNN model developed in Google Colab, and the app is built using Flask and managed with Poetry.
+The classification is powered by a pre-trained **CNN model** developed in Google Colab, and the app is built using Flask and managed with Poetry.
 
 ## 🛠 Installation
 
@@ -37,7 +37,7 @@ python -m flask run
 - Returns classification results with the label and probability score.
 - Organized with separate modules for app logic and image classification.
 - Built with Flask and managed with Poetry for smooth setup and deployment.
-- Achieved a validation accuracy of 90.02% with a validation loss of 0.3368 at epoch 38 — the best model with the highest accuracy and lowest loss.
+- Achieved a validation accuracy of 90.02% with a validation loss of 0.3368 at epoch 38.
 
 ## ✍️ Tech Stack
 
