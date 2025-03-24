@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Aircraft Classifier</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div id="upload-section">
+            <h1>Aircraft Classifier</h1>
+            <form id="upload-form" enctype="multipart/form-data">
+                <div class="drop-zone">
+                    <span class="drop-zone__prompt">Drag & drop an image or click to select a file</span>
+                    <input type="file" name="image" accept="image/*" class="drop-zone__input" required>
+                </div>
+                <button type="submit" class="upload-button">Classify</button>
+            </form>
+        </div>
+        <div id="result-section" style="display:none;">
+            <h1>Classification Result</h1>
+            <p>Aircraft Type: <strong id="result-label"></strong></p>
+            <p>Probability: <strong id="result-prob"></strong>%</p>
+            <button id="try-again" class="upload-button">Try Again</button>
+        </div>
+    </div>
+
+    <script>
+        document.querySelectorAll(".drop-zone__input").forEach(inputElement => {
+            const dropZoneElement = inputElement.closest(".drop-zone");
+
+            dropZoneElement.addEventListener("click", e => {
+                inputElement.click();
+            });
+
+            inputElement.addEventListener("change", e => {
+                if (inputElement.files.length) {
+                    updateThumbnail(dropZoneElement, inputElement.files[0]);
+                }
+            });
+
+            dropZoneElement.addEventListener("dragover", e => {
+                e.preventDefault();
+                dropZoneElement.classList.add("drop-zone--over");
+            });
+
+            ["dragleave", "dragend"].forEach(type => {
+                dropZoneElement.addEventListener(type, e => {
+                    dropZoneElement.classList.remove("drop-zone--over");
+                });
+            });
+
+            dropZoneElement.addEventListener("drop", e => {
+                e.preventDefault();
+                if (e.dataTransfer.files.length) {
+                    inputElement.files = e.dataTransfer.files;
+                    updateThumbnail(dropZoneElement, e.dataTransfer.files[0]);
+                }
+                dropZoneElement.classList.remove("drop-zone--over");
+            });
+        });
+
+        function updateThumbnail(dropZoneElement, file) {
+            let thumbnailElement = dropZoneElement.querySelector(".drop-zone__thumb");
+
+            if (dropZoneElement.querySelector(".drop-zone__prompt")) {
+                dropZoneElement.querySelector(".drop-zone__prompt").remove();
+            }
+
+            if (!thumbnailElement) {
+                thumbnailElement = document.createElement("div");
+                thumbnailElement.classList.add("drop-zone__thumb");
+                dropZoneElement.appendChild(thumbnailElement);
+            }
+
+            thumbnailElement.dataset.label = file.name;
+
+            if (file.type.startsWith("image/")) {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => {
+                    thumbnailElement.style.backgroundImage = `url('${reader.result}')`;
+                };
+            } else {
+                thumbnailElement.style.backgroundImage = null;
+            }
+        }
+
+        const form = document.getElementById("upload-form");
+        form.addEventListener("submit", function(e) {
+            e.preventDefault();
+            const formData = new FormData(form);
+            fetch("/classify", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.error) {
+                    alert(data.error);
+                } else {
+                    document.getElementById("result-label").textContent = data.label;
+                    document.getElementById("result-prob").textContent = data.prob;
+                    document.getElementById("upload-section").style.display = "none";
+                    document.getElementById("result-section").style.display = "block";
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert("An error occurred while classifying the image.");
+            });
+        });
+
+        document.getElementById("try-again").addEventListener("click", function() {
+            form.reset();
+            const dropZone = document.querySelector(".drop-zone");
+            const thumb = dropZone.querySelector(".drop-zone__thumb");
+            if (thumb) {
+                thumb.remove();
+                const prompt = document.createElement("span");
+                prompt.classList.add("drop-zone__prompt");
+                prompt.textContent = "Drag & drop an image or click to select a file";
+                dropZone.appendChild(prompt);
+            }
+            document.getElementById("result-section").style.display = "none";
+            document.getElementById("upload-section").style.display = "block";
+        });
+    </script>
+</body>
+</html>
