@@ -1,40 +1,34 @@
 import os
-
+from flask import Flask, request, render_template, jsonify
 import tensorflow as tf
-from flask import Flask, request
-
 from classifier import classify
 
-
 app = Flask(__name__)
-
-STATIC_FOLDER = "static"
-UPLOAD_FOLDER = "static/uploads/"
+app.config["STATIC_FOLDER"] = "static"
+app.config["UPLOAD_FOLDER"] = os.path.join(
+    app.config["STATIC_FOLDER"], "uploads"
+)
 
 cnn_model = tf.keras.models.load_model(
-    STATIC_FOLDER + "/models/" + "f16_b1_c130_mi24.h5"
+    os.path.join(app.config["STATIC_FOLDER"], "models", "f16_b1_c130_mi24.h5")
 )
 
 
-@app.route("/")
-def home():
-    return "Use '/classify' endpoint to classify an image."
+@app.route("/", methods=["GET"])
+def index():
+    return render_template("index.html")
 
 
 @app.route("/classify", methods=["POST"])
-def upload_file():
-    file = request.files["image"]
-    upload_image_path = os.path.join(UPLOAD_FOLDER, file.filename)
-    file.save(upload_image_path)
-
-    label, prob = classify(cnn_model, upload_image_path)
-
-    return {
-        "label": label,
-        "probability": prob,
-    }
+def classify_endpoint():
+    file = request.files.get("image")
+    if file:
+        filepath = os.path.join(app.config["UPLOAD_FOLDER"], file.filename)
+        file.save(filepath)
+        label, prob = classify(cnn_model, filepath)
+        return jsonify({"label": label, "prob": prob})
+    return jsonify({"error": "No file uploaded"}), 400
 
 
 if __name__ == "__main__":
-    app.debug = True
     app.run(debug=True)
