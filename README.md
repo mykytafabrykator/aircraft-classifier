@@ -1,4 +1,4 @@
-# ✈️ Airplane Classifier Flask App
+# ✈️ Aircraft Classifier
 
 A simple and effective web application for classifying airplane images into one of four categories: **F16**, **Mi24**, **B1**, or **C130**. 
 The classification is powered by a pre-trained **CNN model** developed in Google Colab, and the app is built using Flask and managed with Poetry.
