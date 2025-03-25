@@ -1,1 +1,5 @@
+*.css linguist-vendored
+*.html linguist-vendored
 *.ipynb linguist-vendored
+
+*.py linguist-detectable=true
